@@ -414,7 +414,7 @@ public class GuiController implements ClientPacketHandler {
 			TranslateResult<ClassEntry> result = mapper.extendedDeobfuscate(entry);
 			ClassEntry deobfEntry = result.getValue();
 
-			List<ObfuscationTestService> obfService = enigma.getServices().get(ObfuscationTestService.TYPE);
+			Collection<ObfuscationTestService> obfService = enigma.getServices().get(ObfuscationTestService.TYPE);
 			boolean obfuscated = result.isObfuscated() && deobfEntry.equals(entry);
 
 			if (obfuscated && !obfService.isEmpty()) {

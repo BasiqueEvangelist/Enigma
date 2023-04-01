@@ -1,6 +1,7 @@
 package cuchaz.enigma.analysis;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
@@ -22,7 +23,7 @@ import cuchaz.enigma.translation.representation.entry.MethodEntry;
 import cuchaz.enigma.translation.representation.entry.ParentedEntry;
 
 public class StructureTreeNode extends DefaultMutableTreeNode {
-	private final List<NameProposalService> nameProposalServices;
+	private final Collection<NameProposalService> nameProposalServices;
 	private final EntryRemapper mapper;
 	private final ClassEntry parentEntry;
 	private final ParentedEntry entry;

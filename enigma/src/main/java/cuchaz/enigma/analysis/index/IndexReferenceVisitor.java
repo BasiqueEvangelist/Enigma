@@ -63,18 +63,18 @@ public class IndexReferenceVisitor extends ClassVisitor {
 		});
 	}
 
-	private static class MethodInterpreter extends InterpreterPair<BasicValue, SourceValue> {
+	private static class MethodInterpreter extends IndexSimpleVerifier {
 		private final MethodDefEntry callerEntry;
 		private JarIndexer indexer;
 
 		MethodInterpreter(MethodDefEntry callerEntry, JarIndexer indexer, EntryIndex entryIndex, InheritanceIndex inheritanceIndex) {
-			super(new IndexSimpleVerifier(entryIndex, inheritanceIndex), new SourceInterpreter());
+			super(entryIndex, inheritanceIndex);
 			this.callerEntry = callerEntry;
 			this.indexer = indexer;
 		}
 
 		@Override
-		public PairValue<BasicValue, SourceValue> newOperation(AbstractInsnNode insn) throws AnalyzerException {
+		public BasicValue newOperation(AbstractInsnNode insn) throws AnalyzerException {
 			if (insn.getOpcode() == Opcodes.GETSTATIC) {
 				FieldInsnNode field = (FieldInsnNode) insn;
 				indexer.indexFieldReference(callerEntry, FieldEntry.parse(field.owner, field.name, field.desc), ReferenceTargetType.none());
@@ -84,7 +84,7 @@ public class IndexReferenceVisitor extends ClassVisitor {
 		}
 
 		@Override
-		public PairValue<BasicValue, SourceValue> unaryOperation(AbstractInsnNode insn, PairValue<BasicValue, SourceValue> value) throws AnalyzerException {
+		public BasicValue unaryOperation(AbstractInsnNode insn, BasicValue value) throws AnalyzerException {
 			if (insn.getOpcode() == Opcodes.PUTSTATIC) {
 				FieldInsnNode field = (FieldInsnNode) insn;
 				indexer.indexFieldReference(callerEntry, FieldEntry.parse(field.owner, field.name, field.desc), ReferenceTargetType.none());
@@ -99,7 +99,7 @@ public class IndexReferenceVisitor extends ClassVisitor {
 		}
 
 		@Override
-		public PairValue<BasicValue, SourceValue> binaryOperation(AbstractInsnNode insn, PairValue<BasicValue, SourceValue> value1, PairValue<BasicValue, SourceValue> value2) throws AnalyzerException {
+		public BasicValue binaryOperation(AbstractInsnNode insn, BasicValue value1, BasicValue value2) throws AnalyzerException {
 			if (insn.getOpcode() == Opcodes.PUTFIELD) {
 				FieldInsnNode field = (FieldInsnNode) insn;
 				FieldEntry fieldEntry = FieldEntry.parse(field.owner, field.name, field.desc);
@@ -110,7 +110,7 @@ public class IndexReferenceVisitor extends ClassVisitor {
 		}
 
 		@Override
-		public PairValue<BasicValue, SourceValue> naryOperation(AbstractInsnNode insn, List<? extends PairValue<BasicValue, SourceValue>> values) throws AnalyzerException {
+		public BasicValue naryOperation(AbstractInsnNode insn, List<? extends BasicValue> values) throws AnalyzerException {
 			if (insn.getOpcode() == Opcodes.INVOKEINTERFACE || insn.getOpcode() == Opcodes.INVOKESPECIAL || insn.getOpcode() == Opcodes.INVOKEVIRTUAL) {
 				MethodInsnNode methodInsn = (MethodInsnNode) insn;
 				indexer.indexMethodReference(callerEntry, MethodEntry.parse(methodInsn.owner, methodInsn.name, methodInsn.desc), getReferenceTargetType(values.get(0), insn));
@@ -123,7 +123,6 @@ public class IndexReferenceVisitor extends ClassVisitor {
 
 			if (insn.getOpcode() == Opcodes.INVOKEDYNAMIC) {
 				InvokeDynamicInsnNode invokeDynamicInsn = (InvokeDynamicInsnNode) insn;
-				List<AbstractInsnNode> args = values.stream().map(v -> v.right.insns.stream().findFirst().orElseThrow(AssertionError::new)).toList();
 
 				if ("java/lang/invoke/LambdaMetafactory".equals(invokeDynamicInsn.bsm.getOwner()) && "metafactory".equals(invokeDynamicInsn.bsm.getName())) {
 					Type samMethodType = (Type) invokeDynamicInsn.bsmArgs[0];
@@ -149,16 +148,16 @@ public class IndexReferenceVisitor extends ClassVisitor {
 			return super.naryOperation(insn, values);
 		}
 
-		private ReferenceTargetType getReferenceTargetType(PairValue<BasicValue, SourceValue> target, AbstractInsnNode insn) throws AnalyzerException {
-			if (target.left == BasicValue.UNINITIALIZED_VALUE) {
+		private ReferenceTargetType getReferenceTargetType(BasicValue target, AbstractInsnNode insn) throws AnalyzerException {
+			if (target == BasicValue.UNINITIALIZED_VALUE) {
 				return ReferenceTargetType.uninitialized();
 			}
 
-			if (target.left.getType().getSort() == Type.OBJECT) {
-				return ReferenceTargetType.classType(new ClassEntry(target.left.getType().getInternalName()));
+			if (target.getType().getSort() == Type.OBJECT) {
+				return ReferenceTargetType.classType(new ClassEntry(target.getType().getInternalName()));
 			}
 
-			if (target.left.getType().getSort() == Type.ARRAY) {
+			if (target.getType().getSort() == Type.ARRAY) {
 				return ReferenceTargetType.classType(new ClassEntry("java/lang/Object"));
 			}
 

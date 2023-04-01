@@ -34,6 +34,7 @@ import javax.swing.tree.TreePath;
 
 import cuchaz.enigma.gui.node.ClassSelectorClassNode;
 import cuchaz.enigma.gui.util.GuiUtil;
+import cuchaz.enigma.gui.util.SortedMutableTreeNode;
 import cuchaz.enigma.translation.representation.entry.ClassEntry;
 import cuchaz.enigma.utils.validation.ValidationContext;
 
@@ -259,13 +260,13 @@ public class ClassSelector extends JTree {
 	}
 
 	public void expandAll() {
-		for (DefaultMutableTreeNode packageNode : packageManager.getPackageNodes()) {
+		for (SortedMutableTreeNode packageNode : packageManager.getPackageNodes()) {
 			expandPath(new TreePath(packageNode.getPath()));
 		}
 	}
 
 	public void collapseAll() {
-		for (DefaultMutableTreeNode packageNode : packageManager.getPackageNodes()) {
+		for (SortedMutableTreeNode packageNode : packageManager.getPackageNodes()) {
 			collapsePath(new TreePath(packageNode.getPath()));
 		}
 	}

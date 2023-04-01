@@ -176,7 +176,7 @@ public class EnigmaProject {
 	public boolean isObfuscated(Entry<?> entry) {
 		String name = entry.getName();
 
-		List<ObfuscationTestService> obfuscationTestServices = this.getEnigma().getServices().get(ObfuscationTestService.TYPE);
+		Collection<ObfuscationTestService> obfuscationTestServices = this.getEnigma().getServices().get(ObfuscationTestService.TYPE);
 
 		if (!obfuscationTestServices.isEmpty()) {
 			for (ObfuscationTestService service : obfuscationTestServices) {
@@ -186,7 +186,7 @@ public class EnigmaProject {
 			}
 		}
 
-		List<NameProposalService> nameProposalServices = this.getEnigma().getServices().get(NameProposalService.TYPE);
+		Collection<NameProposalService> nameProposalServices = this.getEnigma().getServices().get(NameProposalService.TYPE);
 
 		if (!nameProposalServices.isEmpty()) {
 			for (NameProposalService service : nameProposalServices) {
